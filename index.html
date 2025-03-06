@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firebase Firestore Fix</title>
+</head>
+<body>
+    <h1>Users List</h1>
+    <ul id="user-list"></ul>
+
+    <h2>Add User</h2>
+    <form id="addUserForm">
+        <input type="text" id="name" placeholder="Enter name" required>
+        <input type="email" id="email" placeholder="Enter email" required>
+        <button type="submit">Add User</button>
+    </form>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        // Import Firebase modules
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-app.js";
+        import { getFirestore, collection, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/10.9.0/firebase-firestore.js";
+
+        // 🔥 Replace this with your actual Firebase config
+        const firebaseConfig = {
+            apiKey: "AIzaSyD73CcGUIiCvZ6Lc05Su9f8eCHDKX0Gcyk",
+            authDomain: "monopoly-5bfef.firebaseapp.com",
+            projectId: "monopoly-5bfef",
+            storageBucket: "monopoly-5bfef.firebasestorage.app",
+            messagingSenderId: "239992380705",
+            appId: "1:239992380705:web:50b4df92b2089ab5d5f260"
+          };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // Function to Fetch Data from Firestore
+        async function fetchUsers() {
+            const userList = document.getElementById("user-list");
+            userList.innerHTML = "<li>Loading...</li>";
+
+            try {
+                const querySnapshot = await getDocs(collection(db, "users"));
+                userList.innerHTML = "";
+                
+                querySnapshot.forEach((doc) => {
+                    let data = doc.data();
+                    let li = document.createElement("li");
+                    li.textContent = `${data.name} - ${data.email}`;
+                    userList.appendChild(li);
+                });
+            } catch (error) {
+                console.error("Error fetching users:", error);
+                userList.innerHTML = "<li>Error loading users</li>";
+            }
+        }
+
+        // Load users on page load
+        fetchUsers();
+
+        // Function to Add User to Firestore
+        document.getElementById("addUserForm").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            let name = document.getElementById("name").value;
+            let email = document.getElementById("email").value;
+
+            try {
+                await addDoc(collection(db, "users"), { name, email });
+                alert("User Added!");
+                fetchUsers(); // Refresh user list
+            } catch (error) {
+                console.error("Error adding user:", error);
+                alert("Error adding user");
+            }
+        });
+    </script>
+</body>
+</html>
